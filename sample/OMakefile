@@ -1,5 +1,5 @@
 CXXFLAGS += -Wall -O0 -g -I../include
-LDFLAGS += -levent -lcrypto
+LDFLAGS += -lev -lcrypto
 LIBS += ../src/libcage
 
 

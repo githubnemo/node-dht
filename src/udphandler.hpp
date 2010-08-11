@@ -35,7 +35,7 @@
 #include "common.hpp"
 #include "packetbuf.hpp"
 
-#include <event.h>
+#include <ev.h>
 
 #include <set>
 #include <string>
@@ -90,7 +90,7 @@ namespace libcage {
 
         private:
                 callback       *m_callback;
-                event           m_event;
+                ev_io           m_event;
                 SOCKET          m_socket;
                 bool            m_opened;
                 int             m_domain;

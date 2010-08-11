@@ -114,10 +114,8 @@ namespace libcage {
                 if (m_opened)
                         closesocket(m_socket);
 
-                if (m_callback != NULL) {
+                if (m_callback != NULL)
                         unset_callback();
-                        event_del(&m_event);
-                }
         }
 
         void
@@ -236,14 +234,12 @@ namespace libcage {
         {
                 m_callback = func;
 #ifdef WIN32
-                event_set(&m_event, (int)m_socket, EV_READ | EV_PERSIST,
-                          udp_callback, this);
+                ev_io_set(&m_event, (int)m_socket, EV_READ );
 #else
-                event_set(&m_event, m_socket, EV_READ | EV_PERSIST,
-                          udp_callback, this);
+                ev_io_set(&m_event, m_socket, EV_READ );
 #endif // WIN32
 
-                event_add(&m_event, tout);
+                ev_io_start(EV_DEFAULT_UC_ &m_event);
         }
 
         void
@@ -257,7 +253,7 @@ namespace libcage {
         {
                 m_callback = NULL;
 
-                event_del(&m_event);
+                ev_io_stop(EV_DEFAULT_UC_ &m_event);
         }
 
         bool

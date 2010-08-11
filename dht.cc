@@ -25,7 +25,6 @@ Persistent<FunctionTemplate> DHT::constructor_template;
 Persistent<String> join_symbol;
 
 DHT::DHT() {
-  event_init();
   cage = new libcage::cage;
 }
 

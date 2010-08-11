@@ -1,0 +1,39 @@
+CXXFLAGS += -Wall -O0 -g -fPIC
+# ASFLAGS +=
+LDFLAGS += -lev -lcrypto
+# INCLUDES +=
+
+if $(equal $(SYSNAME), Darwin)
+	EXT_DLL = .dylib
+	export
+
+SRC[] =
+	advertise
+	proxy
+	dgram
+	dht
+	cagetypes
+	dtun
+	peers
+	rttable
+	cage
+	timer
+	natdetector
+	udphandler
+	rdp
+	packetbuf
+	cagetime
+
+LIBNAME = libcage
+
+.PHONY: clean shared static install
+
+shared: $(DynamicCXXLibrary $(LIBNAME), $(SRC))
+
+static: $(StaticCXXLibrary $(LIBNAME), $(SRC))
+
+clean:
+	rm -f *~ *.a *.o *.so *.dylib
+
+
+.DEFAULT: shared static

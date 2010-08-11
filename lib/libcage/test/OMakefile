@@ -1,0 +1,16 @@
+CXXFLAGS += -Wall -O0 -g -I../include
+LDFLAGS += -lev -lcrypto
+LIBS += ../src/libcage
+
+
+.PHONY: clean rdp_test nodes_10000 symmetric
+
+rdp_test: $(CXXProgram rdp_test, rdp_test)
+nodes_10000: $(CXXProgram nodes_10000, nodes_10000)
+symmetric: $(CXXProgram symmetric, symmetric)
+
+clean:
+	rm -f *~ *.o
+	rm -f rdp_test nodes_10000 symmetric
+
+.DEFAULT: rdp_test nodes_10000 symmetric

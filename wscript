@@ -18,6 +18,7 @@ def build(bld):
   obj.target = "dht"
   obj.source = "dht.cc"
   obj.cxxflags = ["-D_FILE_OFFSET_BITS=64", "-D_LARGEFILE_SOURCE"]
+  obj.lib = "cage"
 
 def shutdown():
   if Options.commands['clean']:

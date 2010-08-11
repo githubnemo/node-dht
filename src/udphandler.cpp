@@ -246,8 +246,6 @@ namespace libcage {
                 ev_io_init(&m_event, udp_callback_ev, m_socket, EV_READ );
 #endif // WIN32
 
-                // TODO: where does timeout (tout) fit into this picture?
-                ev_io_start(EV_DEFAULT_UC_ &m_event);
         }
 
         void

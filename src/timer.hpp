@@ -34,7 +34,7 @@
 
 #include "common.hpp"
 
-#include <event.h>
+#include <ev.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
@@ -60,6 +60,7 @@ namespace libcage {
                 virtual ~timer();
 
 
+                friend void     timer_callback_ev(EV_P_ ev_timer *w, int revents);
                 friend void     timer_callback(int fd, short event, void *arg);
 
                 void            set_timer(callback *func, timeval *t);
@@ -67,7 +68,7 @@ namespace libcage {
 
         private:
                 boost::unordered_map<callback*,
-                                     boost::shared_ptr<event> >  m_events;
+                                     boost::shared_ptr<ev_timer> >  m_events;
 
 
 #ifdef DEBUG

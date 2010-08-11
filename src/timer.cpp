@@ -45,21 +45,27 @@ namespace libcage {
                 func();
         }
 
+        void timer_callback_ev(EV_P_ ev_timer *w, int revents) 
+        {
+                timer_callback(0, revents, w->data);
+        }
+
         timer::~timer()
         {
                 boost::unordered_map<callback*,
-                        boost::shared_ptr<event> >::iterator it;
+                        boost::shared_ptr<ev_timer> >::iterator it;
 
                 for (it = m_events.begin(); it != m_events.end(); ++it) {
-                        evtimer_del(it->second.get());
+                        ev_timer_stop(EV_DEFAULT_UC_ it->second.get());
                 }
         }
 
         void
         timer::set_timer(callback *func, timeval *t)
         {
-                typedef boost::shared_ptr<event> ev_ptr;
-                ev_ptr ev = ev_ptr(new event);
+                typedef boost::shared_ptr<ev_timer> ev_ptr;
+                ev_ptr ev = ev_ptr(new ev_timer);
+                ev_tstamp repeat = (double) t->tv_sec;
 
                 // delete old event
                 unset_timer(func);
@@ -68,15 +74,15 @@ namespace libcage {
 
                 // add new event
                 m_events[func] = ev;
-                evtimer_set(ev.get(), timer_callback, func);
-                evtimer_add(ev.get(), t);
+                ev->data = func;
+                ev_timer_init(ev.get(), timer_callback_ev, 0., repeat);
         }
 
         void
         timer::unset_timer(callback *func)
         {
                 if (m_events.find(func) != m_events.end()) {
-                        evtimer_del(m_events[func].get());
+                        ev_timer_stop(EV_DEFAULT_UC_ m_events[func].get());
                         m_events.erase(func);
                 }
         }

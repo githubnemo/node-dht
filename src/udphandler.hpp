@@ -82,6 +82,8 @@ namespace libcage {
                 static void     init();
                 static void     clean_up();
 
+                friend void     udp_callback_ev(EV_P_ struct ev_io *w, 
+                                                int revents);
                 friend void     udp_callback(SOCKET fd, short event, void *arg);
 
 

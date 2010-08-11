@@ -69,7 +69,7 @@ namespace libcage {
                 int fromlen;
 #endif // WIN32
 
-                if (event == EV_TIMEOUT) {
+                if (event & EV_TIMEOUT) {
                         func(udp, pbuf, NULL, 0, true);
                         return;
                 }
@@ -103,6 +103,12 @@ namespace libcage {
 
                 func(udp, pbuf, (sockaddr*)&from, (int)fromlen, false);
         }
+
+        void udp_callback_ev(EV_P_ struct ev_io *w, int revents)
+        {
+                udp_callback(w->fd, revents, w->data);
+        }
+
 
         udphandler::udphandler() : m_callback(NULL), m_opened(false)
         {
@@ -233,12 +239,14 @@ namespace libcage {
         udphandler::set_callback(udphandler::callback *func, timeval *tout)
         {
                 m_callback = func;
+                m_event.data = this;
 #ifdef WIN32
-                ev_io_set(&m_event, (int)m_socket, EV_READ );
+                ev_io_init(&m_event, udp_callback_ev, (int)m_socket, EV_READ );
 #else
-                ev_io_set(&m_event, m_socket, EV_READ );
+                ev_io_init(&m_event, udp_callback_ev, m_socket, EV_READ );
 #endif // WIN32
 
+                // TODO: where does timeout fit into this picture?
                 ev_io_start(EV_DEFAULT_UC_ &m_event);
         }
 

@@ -23,7 +23,7 @@ inline Handle<Value> ThrowError(const char* err) {
 
 
 Persistent<FunctionTemplate> DHT::constructor_template;
-Persistent<String> join_symbol;
+Persistent<String> id_symbol;
 
 DHT::DHT() {
   cage = new libcage::cage;
@@ -31,6 +31,10 @@ DHT::DHT() {
 
 DHT::~DHT() {
   delete cage;
+}
+
+Local<String> DHT::getNodeId() {
+  return String::New(cage->get_id_str().c_str());
 }
 
 Handle<Value> DHT::SetGlobal(const Arguments& args) {
@@ -73,6 +77,7 @@ Handle<Value> DHT::Open(const Arguments& args) {
   if (! dht->cage->open(domain, port, dtun)) {
     return ThrowError("Could not open dht connection on specific port");
   } else {
+    dht->setNodeIdProperty();
     dht->Ref();
   }
 
@@ -110,6 +115,10 @@ Handle<Value> DHT::Join(const Arguments& args) {
   return args.This();
 }
 
+void DHT::setNodeIdProperty() {
+  handle_->Set(id_symbol, getNodeId());
+}
+
 Handle<Value> DHT::New(const Arguments& args) {
   HandleScope scope;
   DHT* dht = new DHT();
@@ -134,6 +143,10 @@ void DHT::Initialize(Handle<Object> target) {
 
   #define INT_SYMBOL(x, v) do { \
     target->Set(String::NewSymbol(x), Integer::New(v)); } while (0)
+
+  id_symbol = NODE_PSYMBOL("id");
+
+  target->Set(id_symbol, String::Empty());
 
   INT_SYMBOL("NODE_UNDEFINED", libcage::node_undefined);
   INT_SYMBOL("NODE_NAT", libcage::node_nat);

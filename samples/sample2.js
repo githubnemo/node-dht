@@ -4,8 +4,7 @@ var max_nodes = 100;
 var rootPort = 10000;
 var port = rootPort;
 
-// start the bootstrap node
-
+// start the bootstrap nodes
 var rootNode = dht.createNode(port++).setGlobal();
 var bootstrapNode = dht.createNode(port++).setGlobal();
 
@@ -15,10 +14,16 @@ var onJoin = function(result) {
 
   n++;
   if (n < max_nodes) {
-    dht.createNode(port++)
-       .setGlobal()
-       .join("localhost", rootPort, onJoin);
+    var node = dht.createNode(port++)
+                   .setGlobal()
+                   .join("localhost", rootPort, onJoin);
+    console.log(node);
+  } else {
+    console.log("Joined", n, "nodes");
   }
 }
 
+// the bootstrap node first joins the root node. after it
+// has joined, another node is created and attempts to join
+// the root node, etc recursively
 bootstrapNode.join("localhost", rootPort, onJoin);

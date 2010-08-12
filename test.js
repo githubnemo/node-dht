@@ -1,9 +1,10 @@
 var dht = require('./dht');
 
-var node = dht.createNode(10001)
+var node = dht.createNode(10000)
               .setGlobal();
 
-node.join("localhost", 10000, function() {
-  console.log("Joined!");
+console.log("Joining...");
+node.join("localhost", 10000, function(result) {
+  console.log("Join", result ? "succeeded!" : "failed");
   console.log("Nat state: ", this.natState());
 });

@@ -8,25 +8,35 @@
 
 namespace node_dht {
 
-void JoinCallback(bool);
-
 class DHT : public node::ObjectWrap
 {
-  libcage::cage* cage;
-
 public:
-
   static v8::Persistent<v8::FunctionTemplate> constructor_template;
+
+  class join_func {
+  public:
+    DHT* dht;
+    v8::Persistent<v8::Function> cb;
+
+    void operator() (bool success);
+  };
+
+  libcage::cage* cage;
+  join_func join_fn;
 
   DHT();
   ~DHT();
 
   static void Initialize(v8::Handle<v8::Object> target);
 
+protected:
 
   static v8::Handle<v8::Value> Open(const v8::Arguments& args);
+  static v8::Handle<v8::Value> SetGlobal(const v8::Arguments& args);
+  static v8::Handle<v8::Value> GetNatState(const v8::Arguments& args);
   static v8::Handle<v8::Value> Join(const v8::Arguments& args);
   static v8::Handle<v8::Value> New(const v8::Arguments& args);
+
 };
   
 } /* namespace node_dht */

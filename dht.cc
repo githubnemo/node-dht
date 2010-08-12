@@ -1,5 +1,6 @@
 
 #include "dht.h"
+#include <ev.h>
 #include "node_util.h"
 
 using namespace v8;
@@ -32,10 +33,25 @@ DHT::~DHT() {
   delete cage;
 }
 
+Handle<Value> DHT::SetGlobal(const Arguments& args) {
+  HandleScope scope;
+  DHT* dht = UnwrapThis<DHT>(args);
+  dht->cage->set_global();
+  return args.This();;
+}
+
+Handle<Value> DHT::GetNatState(const Arguments& args) {
+  HandleScope scope;
+  DHT* dht = UnwrapThis<DHT>(args);
+
+  Local<Value> nat_state = Integer::New(dht->cage->get_nat_state());
+  return nat_state;
+}
+
 Handle<Value> DHT::Open(const Arguments& args) {
   HandleScope scope;
 
-  if (!(args.Length() <= 2))
+  if (!(args.Length() != 2 || args.Length() != 3))
     return ThrowTypeError("requires at least 2 arguments");
 
   if (!args[0]->IsUint32() || 
@@ -56,6 +72,8 @@ Handle<Value> DHT::Open(const Arguments& args) {
 
   if (! dht->cage->open(domain, port, dtun)) {
     return ThrowError("Could not open dht connection on specific port");
+  } else {
+    dht->Ref();
   }
 
   return Undefined();
@@ -76,17 +94,20 @@ Handle<Value> DHT::Join(const Arguments& args) {
   if (!args[2]->IsFunction()) 
     return ThrowTypeError("third argument must be a function");
 
-  String::AsciiValue asciiHost(args[0]->ToString());
-  std::string host(*asciiHost);
-  int port = static_cast<int>(args[1]->ToInteger()->Value());
-
   DHT* dht = UnwrapThis<DHT>(args);
-  dht->cage->join(host, port, JoinCallback);
 
-  return String::New("Success!!");
-}
+  int port = args[1]->ToInteger()->Value();
+  std::string host = StringToStdString(args[0]);
 
-void JoinCallback(bool unk) {
+  Persistent<Function> cb = PersistFromLocal<Function>(args[2]);
+
+  dht->join_fn.dht = dht;
+  dht->join_fn.cb = cb;
+
+  dht->Ref();
+  dht->cage->join(host, port, dht->join_fn);
+
+  return args.This();
 }
 
 Handle<Value> DHT::New(const Arguments& args) {
@@ -107,11 +128,34 @@ void DHT::Initialize(Handle<Object> target) {
 
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "open", DHT::Open);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "join", DHT::Join);
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "setGlobal", DHT::SetGlobal);
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "_natState", 
+                            DHT::GetNatState);
+
+  #define INT_SYMBOL(x, v) do { \
+    target->Set(String::NewSymbol(x), Integer::New(v)); } while (0)
+
+  INT_SYMBOL("NODE_UNDEFINED", libcage::node_undefined);
+  INT_SYMBOL("NODE_NAT", libcage::node_nat);
+  INT_SYMBOL("NODE_CONE", libcage::node_cone);
+  INT_SYMBOL("NODE_SYMMETRIC", libcage::node_symmetric);
+  INT_SYMBOL("NODE_GLOBAL", libcage::node_global);
 
   target->Set(String::NewSymbol("PF_INET"), Integer::New(PF_INET));
   target->Set(String::NewSymbol("PF_INET6"), Integer::New(PF_INET6));
   target->Set(String::NewSymbol("DHT"), constructor_template->GetFunction());
-  return;
+}
+
+void DHT::join_func::operator() (bool success) {
+  HandleScope scope;
+
+  Local<Value> argv[1];
+  argv[0] = LocalValuePrimitive<Boolean>(success);
+
+  cb->Call(Context::GetCurrent()->Global(), 1, argv);
+  cb.Dispose();
+
+  dht->Unref();
 }
 
 extern "C" void 

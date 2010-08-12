@@ -1,13 +1,9 @@
-var binding = require('./dht.node');
+var dht = require('./dht');
 
-var DHT = binding.DHT;
+var node = dht.createNode(10001)
+              .setGlobal();
 
-var dht = new DHT();
-
-dht.open(binding.PF_INET, 10000);
-
-var ret = dht.join("localhost", 10000, function() {
-  console.log("join seemed to work");
+node.join("localhost", 10000, function() {
+  console.log("Joined!");
+  console.log("Nat state: ", this.natState());
 });
-
-console.log(ret);

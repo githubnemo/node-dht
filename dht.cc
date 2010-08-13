@@ -195,6 +195,7 @@ Handle<Value> DHT::Get(const Arguments& args) {
   dht->get_fn.cb = cb;
 
   // -> into libcage ->
+  dht->Ref();
   dht->cage->get(buffer->data(), buffer->length(), dht->get_fn);
 
   return args.This();

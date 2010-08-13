@@ -41,12 +41,10 @@ var onJoin = function(result) {
       var chosenKey = Math.floor(Math.random() * max_nodes);
       var key = makeKey(chosenKey);
 
-      console.log("Attempting to get...", chosenKey);
-
       nodes[chosenNode].get(key, function(success, results) {
         console.log("Get", success ? "succeeded!" : "failed");
-      }, 1000);
-    });
+      });
+    }, 100);
   }
 }
 

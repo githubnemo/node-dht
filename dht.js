@@ -1,8 +1,7 @@
 var binding = require('./dht.node');
 var DHT = binding.DHT;
 
-DHT.prototype.natState = function() {
-  var state = this._natState();
+var natStr = function(state) {
   switch (state) {
     default:
     case binding.NODE_UNDEFINED:
@@ -16,6 +15,26 @@ DHT.prototype.natState = function() {
     case binding.NODE_GLOBAL:
       return "global";
   }
+}
+
+DHT.prototype.setGlobal = function () {
+  this._setGlobal();
+  this.natState = natStr(this._natState());
+  return this;
+}
+
+DHT.prototype.get = function (key, fn) {
+  this._get(key, function (success, lengths) {
+    var buffers = [];
+    for (var i = 0; i < lengths.length; i++) {
+      var buffer = new Buffer(lengths[i]);
+      buffers.push(buffer);
+    }
+    console.log("huh?")
+    this._fillGetBuffers(buffers);
+    fn(success, buffers);
+  });
+  return this;
 }
 
 exports.createNode = function (port) {

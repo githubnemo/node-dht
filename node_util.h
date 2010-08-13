@@ -23,13 +23,8 @@ inline std::string StringToStdString(v8::Handle<v8::Value> v8str) {
 }
 
 template <typename T, typename T2>
-inline v8::Local<v8::Value> LocalValuePrimitive(T2 val) {
-  return v8::Local<v8::Value>::New(T::New(val));
-}
-
-template <typename T, typename T2>
 inline v8::Local<T> LocalPrimitive(T2 val) {
-  return v8::Local<v8::Value>::New(T::New(val));
+  return v8::Local<T>::New(T::New(val));
 }
 
 template <typename T>

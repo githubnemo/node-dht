@@ -18,8 +18,6 @@ var makeKey = function (n) {
 
 var onJoin = function(result) {
   console.log("Join", result ? "succeeded" : "failed");
-  if (!result)
-    return;
 
   n++;
   if (n < max_nodes) {

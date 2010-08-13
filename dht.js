@@ -24,14 +24,14 @@ DHT.prototype.setGlobal = function () {
 }
 
 DHT.prototype.get = function (key, fn) {
+  var self = this;
   this._get(key, function (success, lengths) {
     var buffers = [];
     for (var i = 0; i < lengths.length; i++) {
       var buffer = new Buffer(lengths[i]);
       buffers.push(buffer);
     }
-    console.log("huh?")
-    this._fillGetBuffers(buffers);
+    self._fillGetBuffers(buffers);
     fn(success, buffers);
   });
   return this;

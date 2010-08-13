@@ -212,10 +212,12 @@ Handle<Value> DHT::FillGetBuffers(const Arguments& args) {
   
   // Unwrap each Buffer contained in the array and fill in data
   // from the ready and willing storedBuffers.
-  libcage::dht::value_set::iterator it = dht->storedBuffers->begin();
-  for (int i = 0; i < n && it != dht->storedBuffers->end(); ++it, i++) {
-    Buffer * buf = ObjectWrap::Unwrap<Buffer>(ar->Get(i).As<Object>());
-    memcpy(buf->data(), it->value.get(), buf->length());
+  if (n) {
+    libcage::dht::value_set::iterator it = dht->storedBuffers->begin();
+    for (int i = 0; i < n && it != dht->storedBuffers->end(); ++it, i++) {
+      Buffer * buf = ObjectWrap::Unwrap<Buffer>(ar->Get(i).As<Object>());
+      memcpy(buf->data(), it->value.get(), buf->length());
+    }
   }
 
   return args.This();

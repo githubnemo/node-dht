@@ -298,7 +298,7 @@ void DHT::get_func::operator() (bool success,
   argv[1] = ar;
 
   dht->Ref();
-  cb->Call(Context::GetCurrent()->Global(), 2, argv);
+  cb->Call(dht->handle_, 2, argv);
   dht->Unref();
   
   cb.Dispose();
@@ -314,7 +314,7 @@ void DHT::join_func::operator() (bool success) {
   Local<Value> argv[1];
   argv[0] = LocalPrimitive<Boolean>(success);
 
-  cb->Call(Context::GetCurrent()->Global(), 1, argv);
+  cb->Call(dht->handle_, 1, argv);
 
   cb.Dispose();
   dht->Unref();

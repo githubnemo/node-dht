@@ -12,37 +12,45 @@ var bootstrapNode = dht.createNode(port+n).setGlobal();
 nodes.push(rootNode);
 nodes.push(bootstrapNode);
 
-var makeKey = function (n) {
+rootNode.n = 0;
+bootstrapNode.n = 1;
+
+var makeBuffer = function (n) {
   return new Buffer(n.toString(), encoding="ascii");
 }
 
 var onJoin = function(result) {
-  console.log("Join", result ? "succeeded" : "failed");
+  var node = this;
 
+  console.log("join", result ? "succeeded" : "failed");
   n++;
+
   if (n < max_nodes) {
-    var key = makeKey(n);
-    var value = new Buffer("ride the dht train! (" + n + ")", 
-                           encoding="ascii");
 
-    var node = dht.createNode(port + n)
-                  .setGlobal()
-                  .join("localhost", port, onJoin)
-                  .put(key, value, 30000);
-
-    nodes.push(node);
+    var newNode = dht.createNode(port + n);
+    newNode.n = n;
+    nodes.push(newNode);
+    newNode.join("localhost", port, onJoin);
 
   } else {
-    console.log("Setting timeout...");
+
+    for (var i = 0; i < max_nodes; i++) {
+      var key = makeBuffer(i);
+      nodes[0].put(key, key, 30000);
+    }
+
     setInterval(function () {
       var chosenNode = Math.floor(Math.random() * max_nodes);
       var chosenKey = Math.floor(Math.random() * max_nodes);
-      var key = makeKey(chosenKey);
+      var key = makeBuffer(chosenKey);
 
       nodes[chosenNode].get(key, function(success, results) {
-        console.log("Get", success ? "succeeded!" : "failed");
+        var node = this;
+        console.log("[node", node.n + "]", "get '" + key + "'", 
+          success ? "succeeded!" : "failed",
+          success ? "data: '" + results + "'" : "");
       });
-    }, 100);
+    }, 1000);
   }
 }
 

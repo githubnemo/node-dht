@@ -157,14 +157,17 @@ Handle<Value> DHT::Put(const Arguments& args) {
   if (!args[2]->IsUint32())
     return ThrowTypeError("Third argument must be an int (ttl)");
   
-  bool hasUnique = args.Length() == 4 && !args[3]->IsBoolean();
-  if (hasUnique)
-    return ThrowTypeError("Fourth argument must be a bool (isUnique)");
+  bool hasOptional = args.Length() > 3;
+  bool optCorrectType = hasOptional && args[3]->IsBoolean();
 
+  if (hasOptional && !optCorrectType)
+    return ThrowTypeError("Fourth argument must be a bool (isUnique)");
 
   Buffer * key = ObjectWrap::Unwrap<Buffer>(args[0]->ToObject());
   Buffer * value = ObjectWrap::Unwrap<Buffer>(args[1]->ToObject());
-  int ttl = args[2]->ToInteger()->Value();
+  uint32_t ttl = args[2]->ToInteger()->Value();
+
+  bool hasUnique = hasOptional && optCorrectType;
   bool isUnique = hasUnique ? args[3]->ToBoolean()->Value() : false;
 
   dht->cage->put(key->data(), key->length(), 
@@ -221,6 +224,19 @@ Handle<Value> DHT::FillGetBuffers(const Arguments& args) {
     }
   }
 
+  dht->storedBuffers.reset();
+
+  return args.This();
+}
+
+
+
+Handle<Value> DHT::PrintState(const Arguments& args) {
+  HandleScope scope;
+  DHT* dht = UnwrapThis<DHT>(args);
+
+  dht->cage->print_state();
+
   return args.This();
 }
 
@@ -247,12 +263,15 @@ void DHT::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "open", DHT::Open);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, 
                             "_fillGetBuffers", DHT::FillGetBuffers);
+
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "_get", DHT::Get);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "put", DHT::Put);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "join", DHT::Join);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "_setGlobal", DHT::SetGlobal);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "_natState", 
                             DHT::GetNatState);
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "printState", 
+                            DHT::PrintState);
 
   #define INT_SYMBOL(x, v) do { \
     target->Set(String::NewSymbol(x), Integer::New(v)); } while (0)
@@ -314,7 +333,9 @@ void DHT::join_func::operator() (bool success) {
   Local<Value> argv[1];
   argv[0] = LocalPrimitive<Boolean>(success);
 
+  dht->Ref();
   cb->Call(dht->handle_, 1, argv);
+  dht->Unref();
 
   cb.Dispose();
   dht->Unref();

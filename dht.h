@@ -48,13 +48,11 @@ public:
   v8::Local<v8::String> getNodeId();
   void setNodeIdProperty();
 
-  static v8::Local<v8::Array> 
-    bufferLengthsFromValueSet(libcage::dht::value_set_ptr buffers);
-
   static void Initialize(v8::Handle<v8::Object> target);
 
 protected:
 
+  static v8::Handle<v8::Value> PrintState(const v8::Arguments& args);
   static v8::Handle<v8::Value> FillGetBuffers(const v8::Arguments& args);
   static v8::Handle<v8::Value> Put(const v8::Arguments& args);
   static v8::Handle<v8::Value> Get(const v8::Arguments& args);

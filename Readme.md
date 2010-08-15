@@ -5,6 +5,10 @@ node-dht is a Kademlia-based Distributed Hash Table library for node.js with
 NAT-traversing super powers! node-dht is a set of bindings to the libcage 
 library which does the heavy lifting under the hood.
 
+What can you do with it? node-dht can be used as a decentralized peer-to-peer
+key/value store with the ability to traverse NATs if needed. More complicated
+protocols can be implemented on top of node-dht as well!
+
 The goal of node-dht is to provide a very flexible, usable, and hackable set of
 tools to easily implement DHT services into your application.
 

@@ -33,9 +33,9 @@ Good luck, the automated build process isn't well fleshed out yet.
 
 ## Depedencies
 
-* [libev][http://software.schmorp.de/pkg/libev.html]
-* [boost][http://www.boost.org/]
-* [libcage][http://github.com/jb55/libcage]
+* [libev](http://software.schmorp.de/pkg/libev.html)
+* [boost](http://www.boost.org/)
+* [libcage](http://github.com/jb55/libcage)
 
 ## Step by Step
 

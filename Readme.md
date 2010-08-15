@@ -62,6 +62,11 @@ branch on my fork of libcage (link in the dependencies section).
 4. git checkout libev
 5. sudo omake install
 
+If you have linking errors when building libcage there's a good chance 
+that it's trying to link to libevent, make sure it's trying to include
+libev's event.h instead of libevent's event.h by removing libevent or by
+moving the headers around.
+
 ### node-dht
 
 6. make

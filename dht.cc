@@ -88,7 +88,6 @@ Handle<Value> DHT::Open(const Arguments& args) {
     return ThrowError("Could not open dht connection on specific port");
   } else {
     dht->setNodeIdProperty();
-    dht->Ref();
   }
 
   return Undefined();

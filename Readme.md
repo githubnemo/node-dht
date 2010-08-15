@@ -12,9 +12,7 @@ protocols can be implemented on top of node-dht as well!
 The goal of node-dht is to provide a very flexible, usable, and hackable set of
 tools to easily implement DHT services into your application.
 
-node-dht is in an early-alpha stage and is very unstable. It can't do much at
-the moment, the put/get is broken and the bindings are not completely
-implemented yet.
+node-dht is in an early-alpha stage and is very unstable.
 
 ## Quick Start
 

@@ -8,38 +8,41 @@
 
 namespace node_dht {
 
-#define CB_INTERNAL \
-  DHT* dht; \
-  v8::Persistent<v8::Function> cb;
-
 class DHT : public node::ObjectWrap
 {
 public:
   static v8::Persistent<v8::FunctionTemplate> constructor_template;
 
   // callback classes {{{
-  class join_func {
+
+  class dht_callback {
   public:
-    CB_INTERNAL
+    DHT* dht;
+    v8::Persistent<v8::Function> cb;
+  };
+
+  class dgram_func : public dht_callback {
+  public:
+    void operator() (void* buf, size_t len, uint8_t* addr);
+  };
+
+  class join_func : public dht_callback {
+  public:
     void operator() (bool success);
   };
 
-  class get_func {
+  class get_func : public dht_callback {
   public:
-    CB_INTERNAL
     void operator() (bool success, libcage::dht::value_set_ptr data);
   };
+
   // }}}
 
   libcage::cage* cage;
+  dgram_func dgram_fn;
   join_func join_fn;
   get_func get_fn;
 
-  // pointer to the data we got back from cage->get
-  // we need to inform our javascript friends how many
-  // value_t's we got back so they can send that many
-  // Buffers our way. As far as I know I can't simply
-  // make new Buffers from C++ and send them off right away.
   libcage::dht::value_set_ptr storedBuffers;
 
   DHT();
@@ -52,6 +55,8 @@ public:
 
 protected:
 
+  static v8::Handle<v8::Value> SendDgram(const v8::Arguments& args);
+  static v8::Handle<v8::Value> SetDgramCallback(const v8::Arguments& args);
   static v8::Handle<v8::Value> PrintState(const v8::Arguments& args);
   static v8::Handle<v8::Value> FillGetBuffers(const v8::Arguments& args);
   static v8::Handle<v8::Value> Put(const v8::Arguments& args);

@@ -13,8 +13,8 @@ inline T* UnwrapThis(const v8::Arguments& args) {
 }
 
 template <typename T>
-inline T* UnwrapThis(const v8::AccessorInfo& args) {
-  return node::ObjectWrap::Unwrap<T>(args.This());
+inline T* UnwrapObject(v8::Handle<v8::Value> arg) {
+  return node::ObjectWrap::Unwrap<T>(arg.As<v8::Object>());
 }
 
 inline std::string StringToStdString(v8::Handle<v8::Value> v8str) {

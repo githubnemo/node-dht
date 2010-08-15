@@ -20,6 +20,32 @@ inline Handle<Value> ThrowError(const char* err) {
   return ThrowException(Exception::Error(String::New(err)));
 }
 
+Local<String> IdToString(uint8_t* id) {
+  char buf[CAGE_ID_LEN+1];
+  sprintf(buf, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x" \
+               "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+               id[ 0], id[ 1], id[ 2], id[ 3], id[ 4],
+               id[ 5], id[ 6], id[ 7], id[ 8], id[ 9],
+               id[10], id[11], id[12], id[13], id[14],
+               id[15], id[16], id[17], id[18], id[19]);
+  return String::New(buf);
+}
+
+void StringToId(Handle<String> str, uint8_t* id) {
+  char* data = *(String::AsciiValue(str));
+  char lshifted = '\0';
+  for (int i = 0; i < CAGE_ID_LEN; i++) {
+    char val = data[i];
+    if (val <= '0' && val <= '9') val -= '0';
+    if (val <= 'A' && val <= 'Z') val -= 'A' + 10;
+    if (val <= 'a' && val <= 'z') val -= 'a' + 10;
+    if ((i % 2) == 0)
+      lshifted = (val << 4) & 0xF0;
+    else
+      id[(i-1)/2] = lshifted | val;
+  }
+}
+
 // }}}
 
 
@@ -205,6 +231,7 @@ Handle<Value> DHT::Get(const Arguments& args) {
 
 
 
+// TODO: Remove this, build buffers in c++
 Handle<Value> DHT::FillGetBuffers(const Arguments& args) {
   HandleScope scope;
 
@@ -241,6 +268,50 @@ Handle<Value> DHT::PrintState(const Arguments& args) {
 
 
 
+// TODO: Should look into using EventEmitter instead of this
+Handle<Value> DHT::SetDgramCallback(const Arguments& args) {
+  HandleScope scope;
+  DHT* dht = UnwrapThis<DHT>(args);
+
+  assert(args[0]->IsFunction());
+
+  Persistent<Function> cb = PersistFromLocal<Function>(args[0]);
+  dgram_func& f = dht->dgram_fn;
+
+  // Dispose any previous persistent callback handles
+  // This is safe, Dispose checks if it's empty and does nothing if it is
+  f.cb.Dispose();
+
+  f.dht = dht;
+  f.cb = cb;
+
+  // -> into libcage ->
+  dht->cage->set_dgram_callback(f);
+
+  return args.This();
+}
+
+
+
+Handle<Value> DHT::SendDgram(const Arguments& args) {
+  HandleScope scope;
+  DHT* dht = UnwrapThis<DHT>(args);
+
+  assert(args[0]->IsString());
+  assert(Buffer::HasInstance(args[1]));
+
+  Buffer * data = UnwrapObject<Buffer>(args[1]);
+
+  uint8_t id[CAGE_ID_LEN];
+  StringToId(args[0].As<String>(), id);
+
+  dht->cage->send_dgram(data->data(), data->length(), id);
+
+  return args.This();
+}
+
+
+
 Handle<Value> DHT::New(const Arguments& args) {
   HandleScope scope;
   DHT* dht = new DHT();
@@ -260,9 +331,12 @@ void DHT::Initialize(Handle<Object> target) {
   constructor_template->SetClassName(String::NewSymbol("DHT"));
 
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "open", DHT::Open);
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, 
-                            "_fillGetBuffers", DHT::FillGetBuffers);
-
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "_fillGetBuffers", 
+                            DHT::FillGetBuffers);
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "_setDgramCallback", 
+                            DHT::SetDgramCallback);
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "_sendDgram", 
+                            DHT::SetDgramCallback);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "_get", DHT::Get);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "put", DHT::Put);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "join", DHT::Join);
@@ -291,6 +365,21 @@ void DHT::Initialize(Handle<Object> target) {
 }
 
 
+// <- out of libcage <-
+void DHT::dgram_func::operator() (void* buf, size_t len, uint8_t* id) {
+  HandleScope scope;
+
+  Buffer * buffer = Buffer::New(len);
+
+  memcpy(buffer->data(), buf, len);
+  
+  Handle<Value> argv[2];
+  argv[0] = buffer->handle_;
+  argv[1] = IdToString(id);
+
+  cb->Call(dht->handle_, 2, argv);
+}
+
 
 // <- out of libcage <-
 void DHT::get_func::operator() (bool success, 
@@ -315,9 +404,7 @@ void DHT::get_func::operator() (bool success,
 
   argv[1] = ar;
 
-  dht->Ref();
   cb->Call(dht->handle_, 2, argv);
-  dht->Unref();
   
   cb.Dispose();
   dht->Unref();
@@ -332,9 +419,7 @@ void DHT::join_func::operator() (bool success) {
   Local<Value> argv[1];
   argv[0] = LocalPrimitive<Boolean>(success);
 
-  dht->Ref();
   cb->Call(dht->handle_, 1, argv);
-  dht->Unref();
 
   cb.Dispose();
   dht->Unref();

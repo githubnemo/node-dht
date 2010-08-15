@@ -17,6 +17,25 @@ var natStr = function(state) {
   }
 }
 
+DHT.prototype.recv = function (fn) {
+  this._setDgramCallback(fn);
+  return this;
+}
+
+DHT.prototype.send = function (id, buffer) {
+  if (arguments.length != 2)
+    throw new Error("Requires at least 2 arguments");
+
+  if (! (id instanceof String))
+    throw new Error("First argument must be a string (node id)");
+
+  if (! (buffer instanceof Buffer))
+    throw new Error("Second argument must be a buffer");
+   
+  this._sendDgram(id, buffer);
+  return this;
+}
+
 DHT.prototype.setGlobal = function () {
   this._setGlobal();
   this.natState = natStr(this._natState());

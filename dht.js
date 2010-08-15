@@ -18,6 +18,13 @@ var natStr = function(state) {
 }
 
 DHT.prototype.recv = function (fn) {
+
+  if (arguments.length != 1)
+    throw new Error("Requires at least 1 argument (function)");
+
+  if (typeof fn != "function")
+    throw new Error("First argument must be a function");
+
   this._setDgramCallback(fn);
   return this;
 }
@@ -26,7 +33,7 @@ DHT.prototype.send = function (id, buffer) {
   if (arguments.length != 2)
     throw new Error("Requires at least 2 arguments");
 
-  if (! (id instanceof String))
+  if (typeof id != "string")
     throw new Error("First argument must be a string (node id)");
 
   if (! (buffer instanceof Buffer))

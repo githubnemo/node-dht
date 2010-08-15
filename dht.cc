@@ -21,8 +21,9 @@ inline Handle<Value> ThrowError(const char* err) {
 }
 
 Local<String> IdToString(uint8_t* id) {
-  char buf[CAGE_ID_LEN+1];
-  sprintf(buf, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x" \
+  HandleScope scope;
+  char buf[CAGE_ID_LEN+1] = {0};
+  sprintf(buf, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x"
                "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
                id[ 0], id[ 1], id[ 2], id[ 3], id[ 4],
                id[ 5], id[ 6], id[ 7], id[ 8], id[ 9],
@@ -32,13 +33,17 @@ Local<String> IdToString(uint8_t* id) {
 }
 
 void StringToId(Handle<String> str, uint8_t* id) {
-  char* data = *(String::AsciiValue(str));
-  char lshifted = '\0';
-  for (int i = 0; i < CAGE_ID_LEN; i++) {
-    char val = data[i];
-    if (val <= '0' && val <= '9') val -= '0';
-    if (val <= 'A' && val <= 'Z') val -= 'A' + 10;
-    if (val <= 'a' && val <= 'z') val -= 'a' + 10;
+  String::AsciiValue value(str);
+  uint8_t* data = (uint8_t*)*value;
+  uint8_t lshifted = '\0';
+  for (int i = 0; i < (CAGE_ID_LEN * 2); i++) {
+    uint8_t val = data[i];
+
+    if (val >= '0' && val <= '9') val = val - '0';
+    else if (val >= 'A' && val <= 'Z') val = (val - 'A') + 0xA;
+    else if (val >= 'a' && val <= 'z') val = (val - 'a') + 0xa;
+    else assert("invalid id string" && 0);
+
     if ((i % 2) == 0)
       lshifted = (val << 4) & 0xF0;
     else
@@ -336,7 +341,7 @@ void DHT::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "_setDgramCallback", 
                             DHT::SetDgramCallback);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "_sendDgram", 
-                            DHT::SetDgramCallback);
+                            DHT::SendDgram);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "_get", DHT::Get);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "put", DHT::Put);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "join", DHT::Join);

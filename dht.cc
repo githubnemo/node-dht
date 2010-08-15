@@ -171,7 +171,7 @@ Handle<Value> DHT::Put(const Arguments& args) {
   bool isUnique = hasUnique ? args[3]->ToBoolean()->Value() : false;
 
   dht->cage->put(key->data(), key->length(), 
-                 value->data(), value->length(), isUnique);
+                 value->data(), value->length(), ttl, isUnique);
 
   return args.This();
 }

@@ -1,5 +1,5 @@
 
-var dht = require('../dht');
+var dht = require('../../dht');
 
 var max_nodes = 20;
 var port = 10000;

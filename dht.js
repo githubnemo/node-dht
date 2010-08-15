@@ -36,9 +36,11 @@ DHT.prototype.get = function (key, fn) {
   return this;
 }
 
-exports.createNode = function (port) {
+exports.createNode = function (port, dtun, inet) {
   var dht = new DHT();
-  dht.open(binding.PF_INET, port, true);
+  inet = inet || binding.PF_INET;
+  dtun = dtun || true;
+  dht.open(inet, port, dtun);
   return dht;
 }
 

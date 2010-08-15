@@ -9,6 +9,7 @@ var nodes = [];
 var rootNode = dht.createNode(port).setGlobal();
 var bootstrapNode = dht.createNode(port+n).setGlobal();
 
+
 nodes.push(rootNode);
 nodes.push(bootstrapNode);
 
@@ -19,10 +20,11 @@ var makeBuffer = function (n) {
   return new Buffer(n.toString(), encoding="ascii");
 }
 
+
 var onJoin = function(result) {
   var node = this;
-
   console.log("join", result ? "succeeded" : "failed");
+
   n++;
 
   if (n < max_nodes) {
@@ -30,18 +32,18 @@ var onJoin = function(result) {
     var newNode = dht.createNode(port + n);
     newNode.n = n;
     nodes.push(newNode);
-    newNode.join("localhost", port, onJoin);
+
+    newNode.join("localhost", port, function (results) {
+      var key = makeBuffer(n);
+      this.put(key, key, 30000);
+      onJoin(arguments);
+    });
 
   } else {
-
-    for (var i = 0; i < max_nodes; i++) {
-      var key = makeBuffer(i);
-      nodes[0].put(key, key, 30000);
-    }
-
+    var j = 0;
     setInterval(function () {
       var chosenNode = Math.floor(Math.random() * max_nodes);
-      var chosenKey = Math.floor(Math.random() * max_nodes);
+      var chosenKey = j++ % max_nodes;
       var key = makeBuffer(chosenKey);
 
       nodes[chosenNode].get(key, function(success, results) {
@@ -50,7 +52,7 @@ var onJoin = function(result) {
           success ? "succeeded!" : "failed",
           success ? "data: '" + results + "'" : "");
       });
-    }, 1000);
+    }, 200);
   }
 }
 

@@ -10,7 +10,7 @@ tools to easily implement DHT services into your application.
 
 node-dht is in an early-alpha stage and is very unstable.
 
-### Quick Start
+# Quick Start
 
     var dht = require('../dht')
     var port = 10000;
@@ -27,7 +27,7 @@ node-dht is in an early-alpha stage and is very unstable.
       node2.printState();
     });
 
-### Building
+# Building
 
 Good luck, the automated build process isn't well fleshed out yet.
 
@@ -39,13 +39,13 @@ Good luck, the automated build process isn't well fleshed out yet.
 
 ## Step by Step
 
-# boost, libev
+### boost, libev
 
 1. build and install boost
 2. build libev *WITH* -DEV\_MULTIPLICITY=0, install it
 3. libcage requires omake, download and install it
 
-# libcage
+### libcage
 
 libcage was originally implemented with libevent. To make it play nice
 inside node.js' event loop, we need to link to libev instead. Luckily
@@ -56,6 +56,6 @@ branch on my fork of libcage (link in the dependencies section).
 4. git checkout libev
 5. sudo omake install
 
-# node-dht
+### node-dht
 
 6. make

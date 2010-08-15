@@ -10,7 +10,7 @@ tools to easily implement DHT services into your application.
 
 node-dht is in an early-alpha stage and is very unstable.
 
-# Quick Start
+## Quick Start
 
     var dht = require('../dht')
     var port = 10000;
@@ -27,7 +27,7 @@ node-dht is in an early-alpha stage and is very unstable.
       node2.printState();
     });
 
-# Building
+## Building
 
 Good luck, the automated build process isn't well fleshed out yet.
 

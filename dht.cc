@@ -200,8 +200,8 @@ Handle<Value> DHT::Put(const Arguments& args) {
   bool hasUnique = hasOptional && optCorrectType;
   bool isUnique = hasUnique ? args[3]->ToBoolean()->Value() : false;
 
-  dht->cage->put(key->data(), key->length(), 
-                 value->data(), value->length(), ttl, isUnique);
+  dht->cage->put(Buffer::Data(key), Buffer::Length(key),
+                 Buffer::Data(value), Buffer::Length(value), ttl, isUnique);
 
   return args.This();
 }
@@ -229,7 +229,7 @@ Handle<Value> DHT::Get(const Arguments& args) {
 
   // -> into libcage ->
   dht->Ref();
-  dht->cage->get(buffer->data(), buffer->length(), dht->get_fn);
+  dht->cage->get(Buffer::Data(buffer), Buffer::Length(buffer), dht->get_fn);
 
   return args.This();
 }
@@ -244,14 +244,14 @@ Handle<Value> DHT::FillGetBuffers(const Arguments& args) {
 
   Local<Array> ar = args[0].As<Array>();
   int n = ar->Length();
-  
+
   // Unwrap each Buffer contained in the array and fill in data
   // from the ready and willing storedBuffers.
   if (n) {
     libcage::dht::value_set::iterator it = dht->storedBuffers->begin();
     for (int i = 0; i < n && it != dht->storedBuffers->end(); ++it, i++) {
       Buffer * buf = ObjectWrap::Unwrap<Buffer>(ar->Get(i).As<Object>());
-      memcpy(buf->data(), it->value.get(), buf->length());
+      memcpy(Buffer::Data(buf), it->value.get(), Buffer::Length(buf));
     }
   }
 
@@ -310,7 +310,7 @@ Handle<Value> DHT::SendDgram(const Arguments& args) {
   uint8_t id[CAGE_ID_LEN];
   StringToId(args[0].As<String>(), id);
 
-  dht->cage->send_dgram(data->data(), data->length(), id);
+  dht->cage->send_dgram(Buffer::Data(data), Buffer::Length(data), id);
 
   return args.This();
 }
@@ -376,8 +376,8 @@ void DHT::dgram_func::operator() (void* buf, size_t len, uint8_t* id) {
 
   Buffer * buffer = Buffer::New(len);
 
-  memcpy(buffer->data(), buf, len);
-  
+  memcpy(Buffer::Data(buffer), buf, len);
+
   Handle<Value> argv[2];
   argv[0] = buffer->handle_;
   argv[1] = IdToString(id);

@@ -62,7 +62,7 @@ DHT.prototype.get = function (key, fn) {
   return this;
 }
 
-exports.createNode = function (port, dtun, inet) {
+function createNode(port, dtun, inet) {
   var dht = new DHT();
   inet = inet || binding.PF_INET;
   dtun = dtun || true;
@@ -70,3 +70,4 @@ exports.createNode = function (port, dtun, inet) {
   return dht;
 }
 
+module.exports = {createNode: createNode};

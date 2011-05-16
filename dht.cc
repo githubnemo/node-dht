@@ -15,7 +15,7 @@ namespace node_dht {
 inline Handle<Value> ThrowTypeError(const char* err) {
   return ThrowException(Exception::TypeError(String::New(err)));
 }
-  
+
 inline Handle<Value> ThrowError(const char* err) {
   return ThrowException(Exception::Error(String::New(err)));
 }
@@ -99,7 +99,7 @@ Handle<Value> DHT::Open(const Arguments& args) {
   if (!(args.Length() != 2 || args.Length() != 3))
     return ThrowTypeError("Requires at least 2 arguments");
 
-  if (!args[0]->IsUint32() || 
+  if (!args[0]->IsUint32() ||
       (args[0]->ToInteger()->Value() != PF_INET &&
       args[0]->ToInteger()->Value() != PF_INET6))
     return ThrowTypeError(
@@ -110,7 +110,7 @@ Handle<Value> DHT::Open(const Arguments& args) {
 
   int domain = args[0]->ToInteger()->Value();
   int port = args[1]->ToInteger()->Value();
-  bool dtun = (args.Length() >= 3 && args[3]->IsBoolean()) ? 
+  bool dtun = (args.Length() >= 3 && args[3]->IsBoolean()) ?
               args[3]->ToBoolean()->Value() : true;
 
   DHT* dht = UnwrapThis<DHT>(args);
@@ -130,17 +130,17 @@ Handle<Value> DHT::Join(const Arguments& args) {
   HandleScope scope;
   bool hasCallback = false;
 
-  if (args.Length() != 3) 
+  if (args.Length() != 3)
     return ThrowTypeError(
       "Requires at least 2 arguments (host, port, [function])");
 
-  if (!args[0]->IsString()) 
+  if (!args[0]->IsString())
     return ThrowTypeError("First argument must be a string (hostname)");
 
-  if (!args[1]->IsUint32()) 
+  if (!args[1]->IsUint32())
     return ThrowTypeError("Second argument must be an int (port)");
 
-  if (args.Length() > 2 && !args[2]->IsFunction()) 
+  if (args.Length() > 2 && !args[2]->IsFunction())
     return ThrowTypeError("Third argument must be a function");
   else
     hasCallback = false;
@@ -169,7 +169,7 @@ void DHT::setNodeIdProperty() {
 }
 
 
-// Put data into the network (key, value, 
+// Put data into the network (key, value,
 Handle<Value> DHT::Put(const Arguments& args) {
   HandleScope scope;
   DHT* dht = UnwrapThis<DHT>(args);
@@ -177,7 +177,7 @@ Handle<Value> DHT::Put(const Arguments& args) {
   if (!(args.Length() == 3 || args.Length() == 4))
     return ThrowTypeError(
       "Requires at least 3 arguments (Buffer, Buffer, int, [bool])");
-  
+
   if (!Buffer::HasInstance(args[0]))
     return ThrowTypeError("First argument must be a Buffer (key)");
 
@@ -214,7 +214,7 @@ Handle<Value> DHT::Get(const Arguments& args) {
 
   if (args.Length() != 2)
     return ThrowTypeError("Requires 2 arguments (Buffer, function)");
-  
+
   if (!Buffer::HasInstance(args[0]))
     return ThrowTypeError("First argument must be a Buffer");
 
@@ -336,19 +336,19 @@ void DHT::Initialize(Handle<Object> target) {
   constructor_template->SetClassName(String::NewSymbol("DHT"));
 
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "open", DHT::Open);
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "_fillGetBuffers", 
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "_fillGetBuffers",
                             DHT::FillGetBuffers);
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "_setDgramCallback", 
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "_setDgramCallback",
                             DHT::SetDgramCallback);
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "_sendDgram", 
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "_sendDgram",
                             DHT::SendDgram);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "_get", DHT::Get);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "put", DHT::Put);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "join", DHT::Join);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "_setGlobal", DHT::SetGlobal);
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "_natState", 
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "_natState",
                             DHT::GetNatState);
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "printState", 
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "printState",
                             DHT::PrintState);
 
   #define INT_SYMBOL(x, v) do { \
@@ -387,7 +387,7 @@ void DHT::dgram_func::operator() (void* buf, size_t len, uint8_t* id) {
 
 
 // <- out of libcage <-
-void DHT::get_func::operator() (bool success, 
+void DHT::get_func::operator() (bool success,
                                 libcage::dht::value_set_ptr buffers) {
   HandleScope scope;
 
@@ -396,7 +396,7 @@ void DHT::get_func::operator() (bool success,
   Local<Value> argv[2];
   argv[0] = LocalPrimitive<Boolean>(success);
 
-  // Get an array of integers containing the lengths of each buffer 
+  // Get an array of integers containing the lengths of each buffer
   Local<Array> ar = success ? Array::New(buffers->size()) : Array::New();
   if (success) {
     libcage::dht::value_set::iterator it;
@@ -410,7 +410,7 @@ void DHT::get_func::operator() (bool success,
   argv[1] = ar;
 
   cb->Call(dht->handle_, 2, argv);
-  
+
   cb.Dispose();
   dht->Unref();
 }
@@ -431,7 +431,7 @@ void DHT::join_func::operator() (bool success) {
 }
 
 
-extern "C" void 
+extern "C" void
 init (Handle<Object> target) {
   HandleScope scope;
   DHT::Initialize(target);

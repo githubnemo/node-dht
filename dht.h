@@ -69,7 +69,7 @@ protected:
 
 private:
 
-  
+
 };
 
 } /* namespace node_dht */

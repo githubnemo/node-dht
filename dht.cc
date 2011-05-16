@@ -186,15 +186,17 @@ Handle<Value> DHT::Put(const Arguments& args) {
 
   if (!args[2]->IsUint32())
     return ThrowTypeError("Third argument must be an int (ttl)");
-  
+
   bool hasOptional = args.Length() > 3;
   bool optCorrectType = hasOptional && args[3]->IsBoolean();
 
   if (hasOptional && !optCorrectType)
     return ThrowTypeError("Fourth argument must be a bool (isUnique)");
 
-  Buffer * key = ObjectWrap::Unwrap<Buffer>(args[0]->ToObject());
-  Buffer * value = ObjectWrap::Unwrap<Buffer>(args[1]->ToObject());
+
+
+  Local<Object> key = args[0]->ToObject();
+  Local<Object> value = args[1]->ToObject();
   uint32_t ttl = args[2]->ToInteger()->Value();
 
   bool hasUnique = hasOptional && optCorrectType;
@@ -221,7 +223,7 @@ Handle<Value> DHT::Get(const Arguments& args) {
   if (!args[1]->IsFunction())
     return ThrowTypeError("Second argument must be a function");
 
-  Buffer * buffer = ObjectWrap::Unwrap<Buffer>(args[0]->ToObject());
+  Local<Object> buffer = args[0]->ToObject();
   Persistent<Function> cb = PersistFromLocal<Function>(args[1]);
 
   dht->get_fn.dht = dht;
@@ -250,7 +252,7 @@ Handle<Value> DHT::FillGetBuffers(const Arguments& args) {
   if (n) {
     libcage::dht::value_set::iterator it = dht->storedBuffers->begin();
     for (int i = 0; i < n && it != dht->storedBuffers->end(); ++it, i++) {
-      Buffer * buf = ObjectWrap::Unwrap<Buffer>(ar->Get(i).As<Object>());
+      Local<Object> buf = ar->Get(i).As<Object>();
       memcpy(Buffer::Data(buf), it->value.get(), Buffer::Length(buf));
     }
   }
@@ -305,7 +307,7 @@ Handle<Value> DHT::SendDgram(const Arguments& args) {
   assert(args[0]->IsString());
   assert(Buffer::HasInstance(args[1]));
 
-  Buffer * data = UnwrapObject<Buffer>(args[1]);
+  Local<Object> data = args[1]->ToObject();
 
   uint8_t id[CAGE_ID_LEN];
   StringToId(args[0].As<String>(), id);

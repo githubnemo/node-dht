@@ -21,7 +21,6 @@ inline Handle<Value> ThrowError(const char* err) {
 }
 
 Local<String> IdToString(uint8_t* id) {
-  HandleScope scope;
   char buf[CAGE_ID_LEN*2+1] = {0};
   sprintf(buf, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x"
                "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",

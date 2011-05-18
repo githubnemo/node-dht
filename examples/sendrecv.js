@@ -13,7 +13,7 @@ var mb = function (s) {
 
 // Bob's away from the computer message handler
 bobNode.recv(function (data, from) {
-  console.log("(Bob) Bob received:", data);
+  console.log("(Bob) Bob received:", data.toString());
   var msg = mb("Hey I'm not here right now, so go away");
   bobNode.send(from, msg);
 });
@@ -27,9 +27,9 @@ bobNode.join("localhost", port, function (ok) {
     // Alice eagerly awaits messages from anyone!
     aliceNode.recv(function (data, from) {
       if (from == bobNode.id)
-        console.log("(Alice) Bob sends a message:", data);
+        console.log("(Alice) Bob sends a message:", data.toString());
       else
-        console.log("(Alice) A message from a stranger:", data);
+        console.log("(Alice) A message from a stranger:", data.toString());
     });
 
     // Send a message to bob!

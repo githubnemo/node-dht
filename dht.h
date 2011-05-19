@@ -28,7 +28,7 @@ public:
 
   class join_func : public dht_callback {
   public:
-    void operator() (bool success);
+    void operator() (bool success, std::vector<libcage::cageaddr> &nodes);
   };
 
   class get_func : public dht_callback {

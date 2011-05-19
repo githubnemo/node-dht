@@ -419,13 +419,22 @@ void DHT::get_func::operator() (bool success,
 
 
 // <- out of libcage <-
-void DHT::join_func::operator() (bool success) {
-  HandleScope scope;
+void DHT::join_func::operator() (bool success, std::vector<libcage::cageaddr> &nodes) {
+//  HandleScope scope;
 
-  Local<Value> argv[1];
+  Local<Value> argv[2];
   argv[0] = LocalPrimitive<Boolean>(success);
 
-  cb->Call(dht->handle_, 1, argv);
+  Local<Array> nodeArray = Array::New(nodes.size());
+
+  for(int i=0; i < nodes.size(); i++) {
+	  const char* idString = nodes.at(i).id->to_string().c_str();
+	  nodeArray->Set(i, String::New(idString));
+  }
+
+  argv[1] = nodeArray;
+
+  cb->Call(dht->handle_, 2, argv);
 
   cb.Dispose();
   dht->Unref();

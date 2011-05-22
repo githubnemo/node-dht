@@ -237,32 +237,6 @@ Handle<Value> DHT::Get(const Arguments& args) {
 
 
 
-// TODO: Remove this, build buffers in c++
-Handle<Value> DHT::FillGetBuffers(const Arguments& args) {
-  HandleScope scope;
-
-  DHT * dht = UnwrapThis<DHT>(args);
-
-  Local<Array> ar = args[0].As<Array>();
-  int n = ar->Length();
-
-  // Unwrap each Buffer contained in the array and fill in data
-  // from the ready and willing storedBuffers.
-  if (n) {
-    libcage::dht::value_set::iterator it = dht->storedBuffers->begin();
-    for (int i = 0; i < n && it != dht->storedBuffers->end(); ++it, i++) {
-      Local<Object> buf = ar->Get(i).As<Object>();
-      memcpy(Buffer::Data(buf), it->value.get(), Buffer::Length(buf));
-    }
-  }
-
-  dht->storedBuffers.reset();
-
-  return args.This();
-}
-
-
-
 Handle<Value> DHT::PrintState(const Arguments& args) {
   HandleScope scope;
   DHT* dht = UnwrapThis<DHT>(args);
@@ -337,8 +311,6 @@ void DHT::Initialize(Handle<Object> target) {
   constructor_template->SetClassName(String::NewSymbol("DHT"));
 
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "open", DHT::Open);
-  NODE_SET_PROTOTYPE_METHOD(constructor_template, "_fillGetBuffers",
-                            DHT::FillGetBuffers);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "_setDgramCallback",
                             DHT::SetDgramCallback);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "_sendDgram",
@@ -404,7 +376,8 @@ void DHT::get_func::operator() (bool success,
 
     int i = 0;
     for (it = buffers->begin(); it != buffers->end(); ++it, i++) {
-      ar->Set(i, Integer::New(it->len));
+		Buffer *buf = Buffer::New(it->value.get(), it->len);
+		ar->Set(i, buf->handle_);
     }
   }
 

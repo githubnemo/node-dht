@@ -38,7 +38,7 @@ DHT.prototype.send = function (id, buffer) {
 
   if (! (buffer instanceof Buffer))
     throw new Error("Second argument must be a buffer");
-   
+
   this._sendDgram(id, buffer);
   return this;
 }
@@ -50,14 +50,8 @@ DHT.prototype.setGlobal = function () {
 }
 
 DHT.prototype.get = function (key, fn) {
-  this._get(key, function (success, lengths) {
-    var buffers = [];
-    for (var i = 0; i < lengths.length; i++) {
-      var buffer = new Buffer(lengths[i]);
-      buffers.push(buffer);
-    }
-    this._fillGetBuffers(buffers);
-    fn.call(this, success, buffers);
+  this._get(key, function (success, buffers) {
+      fn.call(this, success, buffers);
   });
   return this;
 }

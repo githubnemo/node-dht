@@ -66,6 +66,7 @@ protected:
   static v8::Handle<v8::Value> GetNatState(const v8::Arguments& args);
   static v8::Handle<v8::Value> Join(const v8::Arguments& args);
   static v8::Handle<v8::Value> New(const v8::Arguments& args);
+  static v8::Handle<v8::Value> GetPeerAddress(const v8::Arguments& args);
 
 private:
 

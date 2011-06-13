@@ -248,6 +248,27 @@ Handle<Value> DHT::PrintState(const Arguments& args) {
 
 
 
+Handle<Value> DHT::GetPeerAddress(const Arguments& args) {
+	HandleScope scope;
+	DHT* dht = UnwrapThis<DHT>(args);
+
+	if(args.Length() != 1)
+		return ThrowTypeError("Requires 1 argument (peerID)");
+
+	if (!args[0]->IsString())
+		return ThrowTypeError("First argument must be a string (peerID)");
+
+
+	uint8_t id[CAGE_ID_LEN];
+	StringToId(args[0].As<String>(), id);
+
+	std::string addr = dht->cage->get_peer_addr(id);
+
+	return String::New(addr.c_str(), addr.length());
+}
+
+
+
 // TODO: Should look into using EventEmitter instead of this
 Handle<Value> DHT::SetDgramCallback(const Arguments& args) {
   HandleScope scope;
@@ -323,6 +344,7 @@ void DHT::Initialize(Handle<Object> target) {
                             DHT::GetNatState);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "printState",
                             DHT::PrintState);
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "getPeerAddress", DHT::GetPeerAddress);
 
   #define INT_SYMBOL(x, v) do { \
     target->Set(String::NewSymbol(x), Integer::New(v)); } while (0)

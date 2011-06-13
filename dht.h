@@ -43,8 +43,6 @@ public:
   join_func join_fn;
   get_func get_fn;
 
-  libcage::dht::value_set_ptr storedBuffers;
-
   DHT();
   ~DHT();
 

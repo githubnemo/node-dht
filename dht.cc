@@ -386,8 +386,6 @@ void DHT::get_func::operator() (bool success,
                                 libcage::dht::value_set_ptr buffers) {
   HandleScope scope;
 
-  dht->storedBuffers = buffers;
-
   Local<Value> argv[2];
   argv[0] = LocalPrimitive<Boolean>(success);
 
